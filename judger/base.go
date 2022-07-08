@@ -12,7 +12,8 @@ import (
 )
 
 type Judger interface {
-	JudgeCode() int
+	JudgeCode(string) int
+	CompileCode(string) (bool, string)
 }
 
 type JudgerBase struct {
@@ -104,7 +105,11 @@ func (this *JudgerBase) run(run_cmd *exec.Cmd, errorChan chan int) {
 	}
 	outputBytes = bytes.TrimRight(outputBytes, "\n")
 	outputBytes = bytes.TrimRight(outputBytes, "\r")
-	exec_output := util.ConvertToString(string(outputBytes), global.AppConfig.TerminalEncoding, "utf-8")
+	var possibleCharset = "utf8"
+	if util.IsGBK(outputBytes) {
+		possibleCharset = "gbk"
+	}
+	exec_output := util.ConvertToString(string(outputBytes), possibleCharset, "utf8")
 	//获取目标输出
 	target_output_bytes, err := this.readOutputBytes()
 	if err != nil {

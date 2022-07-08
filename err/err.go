@@ -10,6 +10,7 @@ const (
 	WrongAnswer
 	Timeout
 	OutOfMemory
+	CompileFailed
 )
 
 type ErrorMsg struct {
@@ -51,6 +52,9 @@ func GetMsgByError(errorType int) *ErrorMsg {
 	case OutOfMemory:
 		msg.ErrorType = "out of memory"
 		msg.Detail = "内存超出限制"
+	case CompileFailed:
+		msg.ErrorType = "compile failed"
+		msg.Detail = "语法错误,无法编译"
 	}
 	return msg
 }

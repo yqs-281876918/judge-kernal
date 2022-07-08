@@ -1,9 +1,17 @@
 package judger
 
+import (
+	"os/exec"
+)
+
 type GoJudger struct {
 	JudgerBase
 }
 
-func (g *GoJudger) JudgeCode() int {
-	return 0
+func (this *GoJudger) JudgeCode(executablePath string) int {
+	run_cmd := exec.Command("go", "run", executablePath)
+	return this.RunWithMemoryAndTimeoutMonitor(run_cmd)
+}
+func (this *GoJudger) CompileCode(codePath string) (bool, string) {
+	return true, codePath
 }
