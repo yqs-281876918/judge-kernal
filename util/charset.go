@@ -2,19 +2,18 @@ package util
 
 import "unicode/utf8"
 
-func IsUTF8(data []byte) bool {
-	return utf8.ValidString(string(data))
+func IsUTF8(str string) bool {
+	return utf8.ValidString(str)
 }
 func IsGBK(data []byte) bool {
 	length := len(data)
 	var i int = 0
 	for i < length {
-		if data[i] <= 0x7f {
-			//编码0~127,只有一个字节的编码，兼容ASCII码
+		//fmt.Printf("for %x\n", data[i])
+		if data[i] <= 0xff {
 			i++
 			continue
 		} else {
-			//大于127的使用双字节编码，落在gbk编码范围内的字符
 			if data[i] >= 0x81 &&
 				data[i] <= 0xfe &&
 				data[i+1] >= 0x40 &&

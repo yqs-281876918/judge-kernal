@@ -8,7 +8,7 @@ type PythonJudger struct {
 	JudgerBase
 }
 
-func (this *PythonJudger) JudgeCode(executablePath string) int {
+func (this *PythonJudger) JudgeCode(executablePath string) interface{} {
 	run_cmd := exec.Command("python", executablePath)
 	return this.RunWithMemoryAndTimeoutMonitor(run_cmd)
 }

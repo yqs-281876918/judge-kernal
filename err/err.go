@@ -1,60 +1,105 @@
 package judge_err
 
-const (
-	Pass = iota
-	UnknownError
-	LostInputFile
-	LostOutputFile
-	WrongCode
-	SystemException
-	WrongAnswer
-	Timeout
-	OutOfMemory
-	CompileFailed
-)
+import "judge-kernel/global"
 
-type ErrorMsg struct {
-	ErrorType string `json:"error_type"`
-	Detail    string `json:"detail"`
+type ResultMsg struct {
+	MsgType     string `json:"msg_type"`
+	Description string `json:"description"`
 }
 
-func getDefaultMsg() *ErrorMsg {
-	msg := new(ErrorMsg)
-	msg.ErrorType = "unknown error"
-	msg.Detail = "未知错误"
+type PassMsg struct {
+	ResultMsg
+	TimeCost   int     `json:"time_cost"`
+	MemoryCost float64 `json:"memory_cost"`
+}
+
+func CreatePassMsg(time int, memory float64) *PassMsg {
+	msg := &PassMsg{}
+	msg.MsgType = "pass"
+	msg.Description = "测试用例通过"
+	msg.TimeCost = time
+	msg.MemoryCost = memory
 	return msg
 }
 
-func GetMsgByError(errorType int) *ErrorMsg {
-	msg := getDefaultMsg()
-	switch errorType {
-	case Pass:
-		msg.ErrorType = "pass"
-		msg.Detail = "测试用例通过"
-	case LostInputFile:
-		msg.ErrorType = "lost input file"
-		msg.Detail = "该题目输入文件丢失"
-	case LostOutputFile:
-		msg.ErrorType = "lost output file"
-		msg.Detail = "该题目输出文件丢失"
-	case WrongCode:
-		msg.ErrorType = "wrong code"
-		msg.Detail = "代码存在执行错误"
-	case SystemException:
-		msg.ErrorType = "system exception"
-		msg.Detail = "评测系统出错,请联系管理员"
-	case WrongAnswer:
-		msg.ErrorType = "wrong answer"
-		msg.Detail = "测试用例不通过"
-	case Timeout:
-		msg.ErrorType = "timeout"
-		msg.Detail = "程序执行时间超时"
-	case OutOfMemory:
-		msg.ErrorType = "out of memory"
-		msg.Detail = "内存超出限制"
-	case CompileFailed:
-		msg.ErrorType = "compile failed"
-		msg.Detail = "语法错误,无法编译"
-	}
+type RuntimeErrorMsg struct {
+	ResultMsg
+	Detail string `json:"detail"`
+}
+
+func CreateRuntimeErrorMsg(errorDetail string) *RuntimeErrorMsg {
+	msg := &RuntimeErrorMsg{}
+	msg.MsgType = "runtime-error"
+	msg.Description = "代码存在运行时异常"
+	msg.Detail = errorDetail
+	return msg
+}
+
+type SystemExceptionMsg struct {
+	ResultMsg
+	Detail string `json:"detail"`
+}
+
+func CreateSystemExceptionMsg(detail string) *SystemExceptionMsg {
+	msg := &SystemExceptionMsg{}
+	msg.MsgType = "system-exception"
+	msg.Description = "评测系统出现错误,请稍后重试"
+	msg.Detail = detail
+	return msg
+}
+
+type WrongAnswerMsg struct {
+	ResultMsg
+	Input        string `json:"input"`
+	ExpectOutput string `json:"expect_output"`
+	ActualOutput string `json:"actual_output"`
+}
+
+func CreateWrongAnswerMsg(input string, expect string, actual string) *WrongAnswerMsg {
+	msg := &WrongAnswerMsg{}
+	msg.MsgType = "wrong-answer"
+	msg.Description = "测试用例不通过"
+	msg.Input = input
+	msg.ExpectOutput = expect
+	msg.ActualOutput = actual
+	return msg
+}
+
+type TimeoutMsg struct {
+	ResultMsg
+	LimitedTime int `json:"limited_time"`
+}
+
+func CreateTimeoutMsg() *TimeoutMsg {
+	msg := &TimeoutMsg{}
+	msg.MsgType = "timeout"
+	msg.Description = "运行时间超限"
+	msg.LimitedTime = global.Arguments.TimeOut
+	return msg
+}
+
+type OutOfMemoryMsg struct {
+	ResultMsg
+	LimitedMemorySize int `json:"limited_memory_size"`
+}
+
+func CreateOutOfMemoryMsg() *OutOfMemoryMsg {
+	msg := &OutOfMemoryMsg{}
+	msg.MsgType = "out-of-memory"
+	msg.Description = "运行内存超限"
+	msg.LimitedMemorySize = global.Arguments.MemoryLimit
+	return msg
+}
+
+type CompileFailedMsg struct {
+	ResultMsg
+	Detail string `json:"detail"`
+}
+
+func CreateCompileFailedMsg(detail string) *CompileFailedMsg {
+	msg := &CompileFailedMsg{}
+	msg.MsgType = "compile-failed"
+	msg.Description = "编译错误"
+	msg.Detail = detail
 	return msg
 }

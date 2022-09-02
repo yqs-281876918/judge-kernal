@@ -1,6 +1,7 @@
 package judger
 
 import (
+	"judge-kernel/util"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -10,7 +11,7 @@ type JavaJudger struct {
 	JudgerBase
 }
 
-func (this *JavaJudger) JudgeCode(executablePath string) int {
+func (this *JavaJudger) JudgeCode(executablePath string) interface{} {
 	//初始化cmd
 	className := filepath.Base(executablePath)
 	className = strings.Split(className, ".")[0]
@@ -21,9 +22,17 @@ func (this *JavaJudger) JudgeCode(executablePath string) int {
 
 func (this *JavaJudger) CompileCode(codePath string) (bool, string) {
 	cmd := exec.Command("javac", "-encoding", "utf8", codePath)
-	_, err := cmd.CombinedOutput()
+	output_bytes, err := cmd.CombinedOutput()
 	if err != nil {
-		return false, ""
+		output := string(output_bytes)
+		if util.IsGBK(output_bytes) {
+			temp, err := util.GbkToUtf8(output_bytes)
+			if err != nil {
+				return false, "出现乱码，无法显示具体错误信息，请确保终端编码为UTF8或者GBK"
+			}
+			output = string(temp)
+		}
+		return false, output
 	}
 	fileName := filepath.Base(codePath)
 	fileName = strings.Split(fileName, ".")[0]

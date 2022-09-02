@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/go-ini/ini"
 	"io/ioutil"
 	judge_err "judge-kernel/err"
 	"judge-kernel/global"
@@ -39,16 +38,8 @@ func initArg() {
 	global.Arguments.MemoryLimit = memory_limit
 }
 
-func initConfig() error {
-	return ini.MapTo(global.AppConfig, "./app.ini")
-}
-
 func main() {
 	initArg()
-	err := initConfig()
-	if err != nil {
-		fmt.Println(err)
-	}
 	var judger jd.Judger
 	switch global.Arguments.Language {
 	case "java":
@@ -61,18 +52,17 @@ func main() {
 		judger = new(jd.JavaJudger)
 	}
 	codePath := global.Arguments.CodePath
-	var errMsg *judge_err.ErrorMsg
-	ok, exePath := judger.CompileCode(codePath)
+	var resultMsg interface{}
+	ok, info := judger.CompileCode(codePath)
 	if !ok {
-		errMsg = judge_err.GetMsgByError(judge_err.CompileFailed)
+		resultMsg = judge_err.CreateCompileFailedMsg(info)
 	} else {
-		errorID := judger.JudgeCode(exePath)
-		errMsg = judge_err.GetMsgByError(errorID)
+		resultMsg = judger.JudgeCode(info)
 	}
-	handleMsg(errMsg)
+	handleMsg(resultMsg)
 }
 
-func handleMsg(errMsg *judge_err.ErrorMsg) {
+func handleMsg(errMsg interface{}) {
 	var err error
 	bytes, _ := json.Marshal(errMsg)
 	_, err = os.Stat(global.Arguments.ResultPath)
